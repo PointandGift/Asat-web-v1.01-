@@ -1,0 +1,171 @@
+<html>
+
+<head>
+  <title>
+      Map</title>
+  
+  <meta charset="utf-8">
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  <style>
+    
+    #map {
+      height: 300px;
+      border-radius: 1px;
+      border: 1px solid black;
+        width: 400px;
+     left: 50px;;
+        background-color: red;
+    }
+        
+    .showme {
+      height: 250px;
+        margin: 65px;
+      overflow: auto;
+        width: 380px;
+        border: 15;
+         border: 2px solid black;
+           border-radius: 15px;
+          }
+        tr:hover td {
+      background-color:#000000;
+      color:#ffffff;
+    }
+      body{
+          background-image:url(2.jpg);
+          background-repeat: no-repeat;
+         
+      }
+
+      #search-input{
+          width: 400px;
+          height: 40px;
+          position: absolute;
+          left: 30px;
+      }
+      #searchbut{
+          position:absolute;
+          left: 390px;
+          height: 40px;
+      background-color:black;
+          color: white;
+      }
+  </style>
+</head>
+
+<body>
+
+      <h1><b>PnG Web google  Map</b> </h1>
+
+<input type="text" id="search-input" placeholder="Enter Name "></input>
+<button type="button" id="searchbut">Search</button>
+        <div id="back"></div>
+        <div class="showme">
+          <table id="searchlist"></table>
+        </div>
+      <div id="map"></div>
+
+    
+  <script>
+    var map;
+    var infoWindow;
+    var markers = [];
+    var searchBox;
+
+    function initMap() {
+      var vancouver = {    };
+      map = new google.maps.Map(document.getElementById('map'),
+    {center: vancouver, mapTypeId: 'roadmap'  });
+        
+      infoWindow = new google.maps.InfoWindow({  content: '' });
+
+      var input = document.getElementById('search-input');
+      searchBox = new google.maps.places.SearchBox(input);
+      map.addListener('', function() {
+        searchBox.setBounds(map.getBounds());   });
+
+      searchBox.addListener('places_changed', function() {
+        searchPlaces();   });
+      var button = document.getElementById('searchbut');
+      button.onclick = function() {
+        google.maps.event.trigger(input, 'keydown', {
+          keyCode: 13
+        });
+      };
+    }
+
+      
+    function searchPlaces() {
+      var places = searchBox.getPlaces();
+
+      if (places.length == 0) {
+        return;}
+      markers.forEach(function(marker) {
+        marker.setMap(null);
+      });
+      markers = [];
+
+     
+      var bounds = new google.maps.LatLngBounds();
+      places.forEach(function(place, index) {
+        if (!place.geometry) {return; }
+          
+  
+        var marker = new google.maps.Marker({
+          map: map,
+          title: place.name,
+          address: place.formatted_address,
+          position: place.geometry.location })
+        
+        marker.addListener('click', function() {
+          showInMap(index);
+        });
+        markers.push(marker);
+
+        if (place.geometry.viewport) {
+    
+          bounds.union(place.geometry.viewport);
+        } else {
+          bounds.extend(place.geometry.location);
+        }
+      });
+      map.fitBounds(bounds);
+      renderList();
+    }
+
+    function markerBounce(ind) {
+      markers.forEach(function(marker, index) {
+        if (index !== ind) {
+          marker.setAnimation(null);
+        } else {
+          marker.setAnimation(google.maps.Animation.BOUNCE);
+        }
+      });
+    }
+
+    function renderList() {
+      var items = "<tbody>";
+      markers.forEach(function(marker, index) {
+        items += "<tr><td><b>" + marker.title + "</b><br>" + marker.address;
+       
+    
+        items += "<br><button type='button' class='btn btn-default btn-block' onclick='showInMap(" + index + ")'>Show in Map</button></td></tr>";
+      });
+
+      items += "</tbody>"
+      document.getElementById("searchlist").innerHTML = items;
+    }
+
+    function showInMap(index) {
+      map.setCenter(markers[index].position);
+      markerBounce(index);
+      infoWindow.setContent(markers[index].title + "<br>" + markers[index].address);
+      infoWindow.open(map, markers[index]);
+      map.setZoom(17);
+    }
+  </script>
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBAvdBakEz3ecw-o4OxxAt3kOeUmer1bAo&signed_in=true&libraries=places&callback=initMap" ></script>
+</body>
+
+</html>
